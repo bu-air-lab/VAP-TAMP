@@ -63,7 +63,9 @@ coverage.xml
 local_settings.py
 
 # Flask stuff:
-instance/
+# NOTE: anchored to the repo root. Unanchored `instance/` matched
+# src/stretch/mapping/instance/, silently excluding real source.
+/instance/
 .webassets-cache
 
 # Scrapy stuff:
@@ -113,8 +115,11 @@ ENV/
 *.swn
 *.swo
 
-# URDF files
+# URDF files (generated/calibrated ones); the checked-in robot models
+# below are loaded by src/stretch/motion/constants.py and the IK tests.
 *.urdf
+!src/stretch/config/urdf/*.urdf
+!src/test/motion/*.urdf
 
 # Webcam calibration images
 webcam_calibration_images/
@@ -137,4 +142,6 @@ log/
 # install folder
 install/
 
-debug*/
+# NOTE: anchored to the repo root. Unanchored `debug*/` matched
+# src/stretch/agent/debug/ and src/stretch/app/debug/, which are source.
+/debug*/
