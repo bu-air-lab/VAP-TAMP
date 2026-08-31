@@ -1371,10 +1371,7 @@ class SparseVoxelMap(object):
             return []
 
         pcd = numpy_to_pcd(points.detach().cpu().numpy(), (rgb / norm).detach().cpu().numpy())
-        if orig is None:
-            orig = np.zeros(3)
-
-        geoms = create_visualization_geometries(pcd=pcd, orig=orig)
+        geoms = create_visualization_geometries(pcd=pcd)
 
         # Get the explored/traversible area
         obstacles, explored = self.get_2d_map()
@@ -1384,31 +1381,8 @@ class SparseVoxelMap(object):
             # geoms += self._get_boxes_from_points(traversible, [0, 1, 0])
             # geoms += self._get_boxes_from_points(obstacles, [1, 0, 0])
 
-            if xyt is not None and footprint is not None:
-                geoms += self._get_boxes_from_points(
-                    footprint.get_rotated_mask(self.grid_resolution, float(xyt[2])),
-                    [0, 0, 1],
-                    is_map=False,
-                    height=0.1,
-                    offset=xyt[:2],
-                )
+            pass
 
-        # Define test box parameters
-        test_center = np.array([0.0, 0.0, 0.1])  # Slightly above ground
-        test_size = np.array([0.2, 0.2, 0.2])    # Visible size
-        test_color = [1.0, 0.0, 0.0]             # Bright red
-
-        # Create test box
-        test_box = open3d.geometry.TriangleMesh.create_box(
-            width=test_size[0], height=test_size[1], depth=test_size[2]
-        )
-        test_box.paint_uniform_color(test_color)
-
-        # Important: Translate to center the box properly
-        test_box.translate(test_center - test_size / 2.0)
-
-        # Add to geometries list
-        geoms.append(test_box)
 
         if instances:
             self._get_instances_open3d(geoms)

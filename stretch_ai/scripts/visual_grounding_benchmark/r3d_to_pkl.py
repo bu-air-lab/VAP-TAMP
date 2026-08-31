@@ -86,7 +86,7 @@ def main():
         data['xyz'].append(None) # Added to be thorough, matching original script
         data['instance'].append(None) # <-- FIXED: Added the placeholder value
 
-    output_filename = args.input_file.replace('.r3d', '_unaligned.pkl')
+    output_filename = args.input_file.replace('.r3d', '.pkl')
     print(f"Saving unaligned data to {output_filename}...")
     with open(output_filename, 'wb') as file:
         pkl.dump(data, file)

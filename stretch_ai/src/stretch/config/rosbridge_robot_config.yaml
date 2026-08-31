@@ -53,6 +53,7 @@ max_depth: 5.0
 # VLM configuration for Gemini
 vlm:
   vlm_option: gemini
+  model: gemini-2.5-flash
   vlm_context_length: 100
   save_vlm_plan: true
   replanning: false

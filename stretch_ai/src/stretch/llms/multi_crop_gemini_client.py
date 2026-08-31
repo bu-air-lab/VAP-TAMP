@@ -27,7 +27,7 @@ class MultiCropGeminiClient:
         self.api_key = self.cfg["api_key"]
         self.max_tokens = self.cfg.get("max_tokens", 1000)
         self.temperature = self.cfg.get("temperature", 0.2)
-        self.model = self.cfg.get("model", "gemini-2.0-flash-exp")  # Default to Gemini 2.0 Flash
+        self.model = self.cfg.get("model", "gemini-2.5-flash") # Default to Gemini 2.5 Flash
         self.to_pil = transforms.ToPILImage()
         self.resize = transforms.Resize((self.cfg["img_size"], self.cfg["img_size"]))
 
@@ -142,7 +142,7 @@ class MultiCropGeminiClient:
 
     def _request(self, request_data):
         """Make request to Gemini API."""
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent"
+        url = f"https://generativelanguage.googleapis.com/v1/models/{self.model}:generateContent"
         
         headers = {
             "Content-Type": "application/json",
@@ -154,15 +154,30 @@ class MultiCropGeminiClient:
             response.raise_for_status()
             
             json_res = response.json()
-            
+
             if "candidates" in json_res and len(json_res["candidates"]) > 0:
                 candidate = json_res["candidates"][0]
+
+                # Check if response was truncated due to MAX_TOKENS
+                if candidate.get("finishReason") == "MAX_TOKENS":
+                    print("⚠️  Warning: Gemini response was truncated (MAX_TOKENS limit reached)")
+                    print(f"   Prompt tokens: {json_res.get('usageMetadata', {}).get('promptTokenCount', 'unknown')}")
+                    print(f"   Consider reducing image count or size")
+                    # Try to extract partial response if available
+                    if "content" in candidate and "parts" in candidate["content"]:
+                        parts = candidate["content"]["parts"]
+                        if len(parts) > 0 and "text" in parts[0]:
+                            print("   Using partial response")
+                            return parts[0]["text"]
+                    print("   No partial response available, using fallback")
+                    return "explore"  # Default fallback
+
                 if "content" in candidate and "parts" in candidate["content"]:
                     # Extract text from the first part
                     parts = candidate["content"]["parts"]
                     if len(parts) > 0 and "text" in parts[0]:
                         return parts[0]["text"]
-            
+
             # Fallback if response structure is unexpected
             print("Warning: Unexpected Gemini response structure")
             print("Response:", json_res)
@@ -173,7 +188,14 @@ class MultiCropGeminiClient:
             if hasattr(e, 'response') and e.response is not None:
                 print(f"Response status: {e.response.status_code}")
                 print(f"Response text: {e.response.text}")
+                
+                # Check for expired API key specifically
+                if "API key expired" in e.response.text:
+                    print("\n❌ CRITICAL: YOUR GEMINI API KEY HAS EXPIRED")
+                    print("💡 Please go to https://aistudio.google.com/app/apikey to renew your key.")
+                    print("   Update your command or environment variable with the new key.")
             return "explore"  # Default fallback
         except Exception as e:
             print(f"Unexpected error: {e}")
             return "explore"  # Default fallback
+        

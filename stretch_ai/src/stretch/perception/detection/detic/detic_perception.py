@@ -112,7 +112,9 @@ class DeticPerception(PerceptionModule):
 
         string_args += f""" --opts MODEL.WEIGHTS {checkpoint_file}"""
 
-        if sem_gpu_id == -1:
+        if sem_gpu_id == -1 or not torch.cuda.is_available():
+            if sem_gpu_id != -1:
+                print("[DETIC] CUDA requested but not available - falling back to CPU")
             string_args += """ MODEL.DEVICE cpu"""
         else:
             string_args += f""" MODEL.DEVICE cuda:{sem_gpu_id}"""

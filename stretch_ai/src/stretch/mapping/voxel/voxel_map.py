@@ -787,7 +787,7 @@ class SparseVoxelMapNavigationSpace(XYT):
 
         if orig is None:
             orig = np.zeros(3)
-        geoms = create_visualization_geometries(pcd=pcd, orig=orig)
+        geoms = create_visualization_geometries(pcd=pcd)
 
         # Get the explored/traversible area
         obstacles, explored = self.voxel_map.get_2d_map()
@@ -798,15 +798,6 @@ class SparseVoxelMapNavigationSpace(XYT):
         # geoms += self.voxel_map._get_boxes_from_points(traversible, [0, 1, 0])  # Green traversible
         # geoms += self.voxel_map._get_boxes_from_points(frontier, [0, 1, 1])     # Cyan frontier  
         # geoms += self.voxel_map._get_boxes_from_points(obstacles, [1, 0, 0])    # Red obstacles
-
-        if xyt is not None and footprint is not None:
-            geoms += self.voxel_map._get_boxes_from_points(
-                footprint.get_rotated_mask(self.voxel_map.grid_resolution, float(xyt[2])),
-                [0, 0, 1],
-                is_map=False,
-                height=0.1,
-                offset=xyt[:2],
-            )
 
         if instances and len(self.voxel_map.instances) > 0:
             self.voxel_map._get_instances_open3d(geoms)

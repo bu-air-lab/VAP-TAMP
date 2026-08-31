@@ -32,7 +32,7 @@ class VLMPlanner:
         # TODO: put these into config
         img_size = 256
         temperature = 0.2
-        max_tokens = 50
+        max_tokens = 8192  # Maximum for gemini-2.5-flash
         # Get the directory of this file to construct the path properly
         import os
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -46,6 +46,7 @@ class VLMPlanner:
 
         # Get VLM option from parameters
         vlm_option = self.parameters.get("vlm", {}).get("vlm_option", "gpt4")
+        vlm_model = self.parameters.get("vlm", {}).get("model", "gemini-2.5-flash")
         
         if vlm_option == "gemini":
             # Use Gemini API
@@ -56,6 +57,7 @@ class VLMPlanner:
             self.api_key = api_key
             
             from stretch.llms.multi_crop_gemini_client import MultiCropGeminiClient
+            print(f"🤖 Initializing Gemini VLM Planner with model: {vlm_model}")
             self.gpt_agent = MultiCropGeminiClient(
                 cfg=dict(
                     img_size=img_size,
@@ -63,7 +65,7 @@ class VLMPlanner:
                     api_key=self.api_key,
                     temperature=temperature,
                     max_tokens=max_tokens,
-                    model="gemini-2.0-flash-exp",  # Use Gemini 2.0 Flash for better performance
+                    model=vlm_model,  # Use configurable model
                 )
             )
         else:
